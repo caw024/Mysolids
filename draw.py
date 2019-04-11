@@ -35,7 +35,7 @@ def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x1, y1, z1)
     add_point(polygons, x2, y2, z2)
 
-#edit
+#add scanline
 def draw_polygons( polygons, screen, zbuffer, color ):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
@@ -278,7 +278,7 @@ def add_point( matrix, x, y, z=0 ):
     matrix.append( [x, y, z, 1] )
 
 
-#edit
+#draw to screen/zbuffer
 def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
 
     #swap points if going right -> left
