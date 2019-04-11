@@ -2,14 +2,40 @@ from display import *
 from matrix import *
 from gmath import *
 
+#edit
 def scanline_convert(polygons, i, screen, zbuffer ):
-    pass
+    if len(polygons) < 2:
+        print 'Need at least 3 points to draw'
+        return
+    ycol = [polygons[2][a] for a in range(0,3)]
+    ycol.sort()
+    miny = ycol[0]
+    midy = ycol[1]
+    maxy = ycol[2]
+    j = 0
+    while j <= 2:
+        if polygons[j][2] == miny:
+            minpoly = [ polygons[j][a] for a in range(0,4) ]
+        elif polygons[j][2] == midy:
+            midpoly = [ polygons[j][a] for a in range(0,4) ]
+        else:
+            maxpoly = [ polygons[j][a] for a in range(0,4) ]
+
+    #going up by slope
+    x0 = minpoly[0]
+    x1 = maxpoly[0]
+    while miny < maxy:
+        miny+=1
+        
+
+    
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
     add_point(polygons, x1, y1, z1)
     add_point(polygons, x2, y2, z2)
 
+#edit
 def draw_polygons( polygons, screen, zbuffer, color ):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
@@ -21,6 +47,7 @@ def draw_polygons( polygons, screen, zbuffer, color ):
         normal = calculate_normal(polygons, point)[:]
         #print normal
         if normal[2] > 0:
+            scanline_convert(polygons[point:point+3],color,screen,zbuffer)
             draw_line( int(polygons[point][0]),
                        int(polygons[point][1]),
                        polygons[point][2],
@@ -226,7 +253,7 @@ def add_curve( points, x0, y0, x1, y1, x2, y2, x3, y3, step, curve_type ):
         y0 = y
         i+= 1
 
-
+#edit
 def draw_lines( matrix, screen, zbuffer, color ):
     if len(matrix) < 2:
         print 'Need at least 2 points to draw'
@@ -251,7 +278,7 @@ def add_point( matrix, x, y, z=0 ):
     matrix.append( [x, y, z, 1] )
 
 
-
+#edit
 def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
 
     #swap points if going right -> left
