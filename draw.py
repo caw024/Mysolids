@@ -7,27 +7,41 @@ def scanline_convert(polygons, i, screen, zbuffer ):
     if len(polygons) < 2:
         print 'Need at least 3 points to draw'
         return
-    ycol = [polygons[2][a] for a in range(0,3)]
+    ycol = [polygons[1][a] for a in range(0,3)]
     ycol.sort()
-    miny = ycol[0]
-    midy = ycol[1]
-    maxy = ycol[2]
-    j = 0
-    while j <= 2:
-        if polygons[j][2] == miny:
-            minpoly = [ polygons[j][a] for a in range(0,4) ]
-        elif polygons[j][2] == midy:
-            midpoly = [ polygons[j][a] for a in range(0,4) ]
+    miny,midy,maxy = ycol[0], ycol[1], ycol[2]
+    col = 0
+    orderedpoly = []
+    
+    #minpoly,midpoly,maxpoly = [0],[0],[0]
+    while col <= 2:
+        if polygons[col][1] == miny:
+            minpoly = [ polygons[col][a] for a in range(0,3) ]
+        elif polygons[col][1] == midy:
+            midpoly = [ polygons[col][a] for a in range(0,3) ]
         else:
-            maxpoly = [ polygons[j][a] for a in range(0,4) ]
+            maxpoly = [ polygons[col][a] for a in range(0,3) ]
+        col+=1
 
     #going up by slope
-    x0 = minpoly[0]
-    x1 = maxpoly[0]
+    minx,midx,maxx = minpoly[0], midpoly[0],maxpoly[0]
+    smallx = minpoly[0]
+    largex = minpoly[0]
+    curry = miny
+    minz,midz,maxz = minpoly[2], midpoly[2], maxpoly[2]
+    currz = minpoly[2]
+    curr2z = minpoly[2]
     while miny < maxy:
-        miny+=1
-        
-
+        curry+=1
+        largex += (x2-x0)*1.0/(maxy-miny)
+        currz += (maxz-minz)*1.0/(maxy-miny)
+        if curry >= midy:
+            smallx += (x1-x0)*1.0/(midy-miny)
+            curr2z += (midz - minz)*1.0/(midy-miny)
+        else:
+            smallx += (x2-x1)*1.0/(maxy-midy)
+            curr2z += (maxz - midz)*1.0/(maxy - midy)
+        draw_line(smallx, curry, curr2z, largex, curry, currz, screen, zbuffer, color)
     
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
