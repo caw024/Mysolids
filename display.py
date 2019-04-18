@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from os import remove
+import math
 
 #constants
 XRES = 500
@@ -29,10 +30,15 @@ def new_zbuffer( width = XRES, height = YRES ):
 
 #edit
 def plot( screen, zbuffer, color, x, y, z ):
+    #x = int( round(x) )
+    #y = int( round(y) )
+    #z = int( round(z) )
     newy = YRES - 1 - y
     if ( x >= 0 and x < XRES and newy >= 0 and newy < YRES ):
+        #print("newy: " + str(newy), "newx: " + str(x))
+        #color = [round(a) for a in color]
         screen[newy][x] = color[:]
-        zbuffer[newy][x] = 75
+        zbuffer[newy][x] = z
 
 def clear_screen( screen ):
     for y in range( len(screen) ):

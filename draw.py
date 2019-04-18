@@ -3,45 +3,53 @@ from matrix import *
 from gmath import *
 
 #edit
-def scanline_convert(polygons, i, screen, zbuffer ):
-    if len(polygons) < 2:
-        print 'Need at least 3 points to draw'
-        return
-    ycol = [polygons[1][a] for a in range(0,3)]
+def scanline_convert(polygons, color, screen, zbuffer ):
+    color = [a % 256 for a in color]
+    ycol = [polygons[a][1] for a in range(0,3)]
     ycol.sort()
     miny,midy,maxy = ycol[0], ycol[1], ycol[2]
+    minpoly, midpoly, maxpoly = 0, 0, 0
     col = 0
-    orderedpoly = []
     
-    #minpoly,midpoly,maxpoly = [0],[0],[0]
     while col <= 2:
-        if polygons[col][1] == miny:
+        if minpoly == 0 and polygons[col][1] == miny:
             minpoly = [ polygons[col][a] for a in range(0,3) ]
-        elif polygons[col][1] == midy:
+        elif midpoly == 0 and polygons[col][1] == midy:
             midpoly = [ polygons[col][a] for a in range(0,3) ]
         else:
             maxpoly = [ polygons[col][a] for a in range(0,3) ]
-        col+=1
+        col+=1    
 
     #going up by slope
     minx,midx,maxx = minpoly[0], midpoly[0],maxpoly[0]
     smallx = minpoly[0]
     largex = minpoly[0]
-    curry = miny
+    curry = int(round(miny))
     minz,midz,maxz = minpoly[2], midpoly[2], maxpoly[2]
-    currz = minpoly[2]
-    curr2z = minpoly[2]
-    while miny < maxy:
-        curry+=1
-        largex += (x2-x0)*1.0/(maxy-miny)
-        currz += (maxz-minz)*1.0/(maxy-miny)
-        if curry >= midy:
-            smallx += (x1-x0)*1.0/(midy-miny)
-            curr2z += (midz - minz)*1.0/(midy-miny)
-        else:
-            smallx += (x2-x1)*1.0/(maxy-midy)
-            curr2z += (maxz - midz)*1.0/(maxy - midy)
-        draw_line(smallx, curry, curr2z, largex, curry, currz, screen, zbuffer, color)
+    smallz = minpoly[2]
+    largez = minpoly[2]
+        
+    #if curry is smaller than max
+    while curry <= maxy:
+        #goes up slope to maxx/z
+        largex += (maxx-minx)/(maxy-miny)
+        largez += (maxz-minz)/(maxy-miny)
+        if curry < midy:
+            if midy != miny:
+                smallx += (midx-minx)/(midy-miny)
+                smallz += (midz-minz)/(midy-miny)
+    
+        elif midy <= curry <= maxy:
+            if maxy != midy:
+                smallx += (maxx-midx)*1.0/(maxy-midy)
+                smallz += (maxz-midz)*1.0/(maxy-midy)
+            #draw_line(int(smallx), curry, int(smallz), int(largex), curry, int(largez), screen, zbuffer, color)
+
+        curry += 1
+        #print(smallx,largex,smallz,largez)
+        draw_line(int(smallx), curry, int(smallz), int(largex), curry, int(largez), screen, zbuffer, color)
+            
+
     
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
@@ -56,12 +64,16 @@ def draw_polygons( polygons, screen, zbuffer, color ):
         return
 
     point = 0
+    testcolor = [160,0,50]
     while point < len(polygons) - 2:
 
         normal = calculate_normal(polygons, point)[:]
         #print normal
         if normal[2] > 0:
-            scanline_convert(polygons[point:point+3],color,screen,zbuffer)
+            scanline_convert(polygons[point:point+3],testcolor,screen,zbuffer)
+            testcolor[2] += 50
+            #print(testcolor)
+            
             draw_line( int(polygons[point][0]),
                        int(polygons[point][1]),
                        polygons[point][2],
@@ -83,7 +95,9 @@ def draw_polygons( polygons, screen, zbuffer, color ):
                        int(polygons[point+2][1]),
                        polygons[point+2][2],
                        screen, zbuffer, color)
+            
         point+= 3
+        
 
 
 def add_box( polygons, x, y, z, width, height, depth ):
@@ -346,8 +360,10 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             loop_start = y1
             loop_end = y
 
+    z = z0
+    begin = loop_start
     while ( loop_start < loop_end ):
-        plot( screen, zbuffer, color, x, y, 0 )
+        plot( screen, zbuffer, color, x, y, z )
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
              (tall and ((A > 0 and d < 0) or (A < 0 and d > 0 )))):
 
@@ -358,5 +374,6 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             x+= dx_east
             y+= dy_east
             d+= d_east
+        z += (z1 - z0)/(loop_end - begin)
         loop_start+= 1
-    plot( screen, zbuffer, color, x, y, 0 )
+    plot( screen, zbuffer, color, x, y, z )
